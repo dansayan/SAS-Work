@@ -1,0 +1,229 @@
+/*1a*/
+Data Rain;
+infile "/courses/d452b5e5ba27fe300/HW5p1.dat";
+input Levels Salin Rain River;
+if _n_ = 1 then delete;
+Triv = log(river);
+Train= sqrt(rain);
+if _n_ <= 375 then salin1=salin;
+if _n_ > 375 then salin2=salin;
+run;
+
+/*(1b) Fit an ARIMA model to salinity Yt alone.*/
+proc arima data=rain;
+identify var=salin(1); * ACF:cut off lag 1. lag 2 and 3 on border. no pattern PACF:cut off lag 2. no pattern;
+*estimate q=1 method=ml; /*WN prob to high*/
+estimate p=2 method=ml noint; /*removing mean because no sig*/
+run;
+
+/*(1c) Fit the following regression–time series model (1) for the salinity.*/
+proc autoreg data=rain;
+model salin1=Levels Train Triv/method=ml dwprob;
+run;
+
+
+/*(1d) Check the model diagnostic plots for both models in (b) and (c). Indicate your
+concern(s) if any
+
+c: transformed rain is not significant and the residuals seem to fall outside of the 
+cooks' distance and the studentized residuals, those outliers should be double checked
+
+*/
+
+/*(e) Compute 20 forecasts for the salinity from both models, and compare the two sets
+of forecasts*/
+proc arima data=rain;
+identify var=salin2(1); * ACF:cut off lag 1. lag 2 and 3 on border. no pattern PACF:cut off lag 2. no pattern;
+*estimate q=1 method=ml; /*WN prob to high*/
+estimate p=2 method=ml noconstant; /*removing mean because no sig*/
+forecast out=resY back=0 lead=20 noprint;
+run;
+
+proc autoreg data=rain;
+model salin2 = Levels Triv / method=ml;
+output out=p p=yhat;
+run;
+
+Data D;
+merge resY (Keep=FORECAST) p (keep=yhat);
+if _n_>375;
+obs = _n_;
+run;
+
+Data New;
+set rain;
+if _n_ > 375;
+keep salin2;
+run;
+
+data total;
+merge D New;
+run;
+
+proc sgplot data=total;
+series x=obs y=yhat / legendlabel="Regression Time Series";
+series x=obs y=FORECAST / legendlabel="Univariate Time Series" lineattrs=(pattern=dash);
+series x=obs y= salin2 / legendlabel="New";
+yaxis label="Forecast";
+xaxis label="Step";
+run;
+
+
+/*(2a) Load the dataset via the path “/courses/d452b5e5ba27fe300/HW5p2.txt”. The first
+row is the variable name; the data begins on the second row. Separate Yt to two parts:
+first 500 observations as a training set to fit models, and the last 20 observations as
+the testing set for forecasting.*/
+
+Data question2;
+infile "/courses/d452b5e5ba27fe300/HW5p2.txt" firstobs=2;
+input X Y;
+if _n_ <= 500 then Y1=Y; * training set;
+if _n_ > 500 then Y2=Y; * test set;
+run;
+
+/* (2b) Fit individual ARIMA models for both Xt and Yt. For Yt, also find the forecasts for
+the last 20 observations*/
+Proc arima data=question2;
+identify var=x; 
+estimate noconstant;
+forecast out=resX1 back=0 lead=0 noprint; 
+run;
+/*X  is white noise*/
+/*xt looks like a white noise process - just fit the meanof the process*/
+
+Proc arima data=question2;
+identify var=y1; *ACF: cut off lag 1 or 2 tails off. PACF: decay pattern;
+estimate p=1 q=2 method=ml;
+forecast out=ResY lead=20;
+run;
+
+Proc arima data=question2;
+identify var=y1 crosscorr=(x); /*2c*/
+estimate  p=1 input=((1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)x) method=ml outest=est1; /*2d*/
+*estimate  input=((1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)x) method=ml; /*2f*/ 
+* ACF:cut off lag 1. lag 2 on border.  PACF:tails off --therefore noise term MA(1);
+*estimate p=1 q=1 input=(3$(1)/(1)x) method=ml; /*2g*/
+*forecast out=ResRDL lead=20;
+run;
+
+/*(2e)*/
+proc transpose data=est1 out=est2;
+run;
+data ltf1; 
+set est2; 
+if _n_ >=4 and _n_ <=19; 
+weight1 = COL1; 
+LB = -2*COL2; 
+UB =2*COL2; 
+Lag = COL4; 
+keep weight1 LB UB Lag; 
+if _n_ >4 then weight1 = -weight1; 
+run; 
+
+proc sgplot data=ltf1; 
+vbar Lag /response=weight1; 
+vline Lag /response=LB; 
+vline Lag / response=UB; 
+run; 
+
+/* b=3 because num1, num1,2, and num 1,3 are no sig 
+r=1 cause exp decay
+h=1 */
+
+/*2h*/
+* Check the CCF of residuals;
+* Create the data with all the residuals;
+data res0; 
+set resX1; 
+rX1 = RESIDUAL; 
+set resRDL; 
+rRDL = RESIDUAL; 
+keep rX1 rRDL; 
+run; 
+proc arima data=res0; 
+identify var=rRDL crosscorr=(rX1);
+run; 
+/*ccf plot looks good nothing significant*/
+
+/*2i*/
+* Look at the forecast results;
+data fore; 
+set resRDL; 
+FRDL = FORECAST;
+set resY; 
+FY = FORECAST;
+set question2; 
+TrueY = y2;
+keep FRDL FY TrueY;
+
+data fore1; 
+set fore; 
+if _n_ >=500;
+id = _n_;
+run;
+proc sgplot data=fore1; 
+series x=id y=FRDL / legendlabel="Forecast RDL"; 
+series x=id y=FY / legendlabel="Forecast Y";
+series x=id y=TrueY / legendlabel="Actual Value"; 
+run;
+
+/*3*/
+Data milk1;
+infile "/courses/d452b5e5ba27fe300/HW5p3.txt";
+input Sales;
+run;
+
+data milk;
+set milk1;
+id = _n_;
+if id = 63 then x=1;
+else x=0;
+run;
+
+options missing='M';
+data extra;
+input sales id x;
+cards;
+ 'M' 79 0
+ 'M' 80 0
+ 'M' 81 0
+ 'M' 82 0
+ 'M' 83 0
+;
+run;
+
+proc append base=milk data=extra;
+run;
+/*b=0 r=1 h=0 */
+proc arima data=milk;
+identify var=Sales crosscorr=x(1);
+estimate p=1 q=2 input=(/(1)x) outest=esti;
+forecast out=MilkFive lead=5;
+run;
+
+proc transpose data=esti out=esti1;
+run;
+
+data ltf;
+set esti1;
+weight = COL1;
+LB = -2*COL2;
+UB = 2*COL2;
+Lag=COL4;
+Keep weight LB UB Lag;
+if _n_ >= 3 then weight= -weight;
+run;
+
+proc sgplot data=ltf;
+vbar lag / response=weight;
+vline Lag / response=LB;
+vline Lag / response=UB;
+run;
+
+
+
+
+
+
+
+
