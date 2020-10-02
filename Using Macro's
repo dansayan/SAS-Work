@@ -1,4 +1,5 @@
-/*In keeping with the FSU honor code, I certify that this submission results solely from my own work.*/
+
+
 libname orion "/courses/d0f434e5ba27fe300/mac1";
 /*1*/
 %let Type = Gold;
