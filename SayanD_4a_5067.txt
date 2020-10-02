@@ -1,0 +1,126 @@
+/*In keeping with the FSU honor code, I certify that this submission results solely from my own work.*/
+
+/*1*/
+libname orion "/courses/d0f434e5ba27fe300/sql";
+proc sql;
+select avg(Quantity) as MeanQuantity
+from orion.order_fact
+;
+/*B*/
+title "Employees whose Average Quantity Items Sold Exceeds the Company’s Average Items Sold";
+select Employee_id, Avg(Quantity) as MeanQuantity
+from orion.order_fact
+group by Employee_id
+having calculated MeanQuantity > (select avg(Quantity) as MeanQuantity from orion.order_fact)
+;
+title;
+quit;
+
+/*2*/ 
+title "Employee IDs for February Anniversaries";
+proc sql;
+select Employee_ID
+from orion.Employee_Payroll
+where month(Employee_Hire_Date)=2
+;
+title;
+/*B*/
+
+title "Employees with February Anniversaries";
+
+select Employee_ID,
+scan(Employee_name,2,', ') 
+as FirstName 'First Name',
+scan(Employee_name,1,', ') 
+as LastName 'Last Name'
+from orion.Employee_Addresses
+where Employee_ID in (select Employee_ID
+		      from orion.Employee_Payroll
+		      where month(Employee_Hire_Date)=2)
+order by LastName
+; 
+quit;
+title;
+
+/*3*/
+title "Level I or II Purchasing Agents";
+title2 "Who are older than ALL Purchasing Agent IIIs";
+
+proc sql;
+select Employee_ID, Job_Title, Birth_Date,
+int(('24Nov2007'd-Birth_Date)/365.25) as Age
+from orion.Staff
+where Job_Title in ('Purchasing Agent I','Purchasing Agent II')
+and Birth_Date < all (select Birth_Date
+		      from orion.Staff where 
+		      Job_Title='Purchasing Agent III')
+;
+quit;
+title;
+
+/*4*/
+proc sql;
+Create table One as 
+ select Employee_id, 
+ sum(Total_retail_price*Quantity) format = dollar10.2 as Total_Sales
+ from orion.order_fact
+ where Employee_id ne 99999999
+ group by Employee_Id
+ ;
+Title "Employee With the Highest Sales";
+select Employee_ID, Total_Sales
+from work.one
+having Total_Sales ge max(Total_Sales)
+;
+title;
+Title "Name of The Employee With the Highest Sales";
+/*B*/
+select Employee_ID, Employee_Name
+from orion.Employee_Addresses
+having Employee_ID = (select Employee_ID
+		      from work.one having 
+		      Total_Sales ge max(Total_Sales))
+;
+title;
+/*C*/
+Title "Employee with the Highest Sales";
+	select one.Employee_ID label = "Employee Identification", 
+	b.Employee_Name label = "Employee Name",one.Total_Sales 
+	label = "Total Sales"
+from work.one, orion.employee_addresses as b
+where one.Employee_Id = b.Employee_ID
+having Employee_ID = (Select Employee_ID from work.one
+			having Total_Sales ge max(Total_Sales))
+;
+quit;
+
+/*5*/
+title "Australian Employees' Birth Months";
+proc sql;
+select Employee_ID,
+month(Birth_Date) as BirthMonth format=3.
+from orion.Employee_Payroll as Py
+where 'AU' =
+(select Country
+from orion.Employee_Addresses as Ad
+where Ad.Employee_ID=Py.Employee_ID)
+order by 2
+;
+quit;
+title;
+
+/*6*/
+
+Title "Employees With Donations > 0.002 of Their Salary";
+
+proc sql;
+ select Employee_id, Employee_gender, Marital_status
+ from orion.Employee_payroll
+ where exists (select * from orion.Employee_Donations
+	       where Employee_Payroll.Employee_ID=
+	       Employee_Donations.Employee_ID
+	       and sum(qtr1,qtr2,qtr3,qtr4)/salary > 
+	       .002)
+;
+quit;
+title;
