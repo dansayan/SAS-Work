@@ -1,0 +1,251 @@
+
+/*1*/ 
+Data Study;
+DO i = 1 to 3;
+Do j = 1 to 9;
+Do n = 1 to 2;
+Alpha = rannor(1) * 2;
+Beta = rannor(3) * 10;
+Int = rannor(2) * 1;
+Er = rannor(4) * 5;
+output;
+end; end; end;
+run;
+
+Data Study2;
+set study;
+Mu = 0;
+Y_ij = mu + Alpha + Beta + Int + Er;
+run;
+
+proc print data = study2;
+run;
+
+proc glm data=study2;
+class i j;
+model Y_ij = i j i*j;
+random i j;
+run;
+
+proc varcomp data=study2 method=type1;
+class i j ;
+model y_ij = i j |i*j;
+run;
+quit;
+
+/*2*/
+
+Data Unrestricted;
+DO i = 1 to 3;
+Do j = 1 to 9;
+Do n = 1 to 2;
+Alpha = (i - 2);
+Beta = rannor(1) * 10;
+AB = rannor(2) * 1;
+Er = rannor(3) * 5;
+output;
+end; end; end;
+run;
+
+Data Unrestricted2;
+set unrestricted;
+Mu = 0;
+Y_ij = mu + alpha + beta + ab + er;
+run;
+
+proc print data=unrestricted2;
+run;
+
+proc mixed data=unrestricted2;
+class i j ;
+model y_ij = i ;
+random j i*j;
+run;
+
+proc mixed data=unrestricted2 method=reml cl;
+class i j;
+model y_ij = i;
+random j i*j;
+run;
+quit;
+
+
+/* # 3 */ 
+data final;
+ input orient $ medium $ day  frac  ; 
+ cards;
+          exper        1    1                 0.67
+            std        1    1                 0.34
+          exper        2    1                 0.46
+            std        2    1                 0.26
+          exper        3    1                 0.63
+            std        3    1                 0.40
+          exper        1    2                 0.70
+            std        1    2                 0.42
+          exper        2    2                 0.69
+            std        2    2                 0.42
+          exper        3    2                 0.74
+            std        3    2                 0.17
+          exper        1    3                 0.86
+            std        1    3                 0.42
+          exper        2    3                 0.89
+            std        2    3                 0.33
+          exper        3    3                 0.80
+            std        3    3                 0.17
+          exper        1    4                 0.76
+            std        1    4                 0.53
+          exper        2    4                 0.74
+            std        2    4                 0.60
+          exper        3    4                 0.78
+            std        3    4                 0.53
+          exper        1    5                 0.63
+            std        1    5                 0.71
+          exper        2    5                 0.50
+            std        2    5                 0.29
+          exper        3    5                 0.63
+            std        3    5                 0.29
+          exper        1    6                 0.65
+            std        1    6                 0.60
+          exper        2    6                 0.95
+            std        2    6                 1.00
+          exper        3    6                 0.90
+            std        3    6                 0.40
+          exper        1    7                 0.73
+            std        1    7                 0.50
+          exper        2    7                 0.83
+            std        2    7                 0.88
+          exper        3    7                 0.93
+            std        3    7                 0.88
+          exper        1    8                 0.94
+            std        1    8                 0.75
+          exper        2    8                 0.94
+            std        2    8                 0.75
+          exper        3    8                 0.80
+            std        3    8                 1.00
+          exper        1    9                 0.93
+            std        1    9                 0.70
+          exper        2    9                 0.77
+            std        2    9                 0.50
+          exper        3    9                 0.90
+            std        3    9                 0.80
+          exper        1   10                 0.71
+            std        1   10                 0.30
+          exper        2   10                 0.48
+            std        2   10                 0.40
+          exper        3   10                 0.65
+            std        3   10                 0.30
+          exper        1   11                 0.83
+            std        1   11                 0.20
+          exper        2   11                 0.74
+            std        2   11                 0.00
+          exper        3   11                 0.69
+            std        3   11                 0.30
+          exper        1   12                 0.82
+            std        1   12                 0.50
+          exper        2   12                 0.72
+            std        2   12                 0.00
+          exper        3   12                 0.63
+            std        3   12                 0.30
+          exper        1   13                 0.67
+            std        1   13                 0.67
+          exper        2   13                 0.67
+            std        2   13                 0.25
+          exper        3   13                 0.90
+            std        3   13                 0.42
+          exper        1   14                 0.83
+            std        1   14                 0.50
+          exper        2   14                 0.94
+            std        2   14                 0.40
+          exper        3   14                 0.83
+            std        3   14                 0.33
+          exper        1   15                 1.00
+            std        1   15                 1.00
+          exper        2   15                 0.80
+            std        2   15                 0.33
+          exper        3   15                 0.90
+            std        3   15                 1.00
+          exper        1   16                 0.95
+            std        1   16                 0.75
+          exper        2   16                 0.76
+            std        2   16                 0.25
+          exper        3   16                 0.96
+            std        3   16                 0.63
+          exper        1   17                 0.47
+            std        1   17                 0.50
+          exper        2   17                 0.71
+            std        2   17                 0.67
+          exper        3   17                 0.67
+            std        3   17                 0.50
+          exper        1   18                 0.83
+            std        1   18                 0.50
+          exper        2   18                 0.94
+            std        2   18                 0.67
+          exper        3   18                 0.83
+            std        3   18                 0.83
+          exper        1   19                 0.90
+            std        1   19                 0.33
+          exper        2   19                 0.83
+            std        2   19                 0.67
+          exper        3   19                 0.97
+            std        3   19                 0.50
+          exper        1   20                 1.00
+            std        1   20                 0.50
+          exper        2   20                 0.69
+            std        2   20                 0.25
+          exper        3   20                 0.92
+            std        3   20                 1.00
+          exper        1   21                 0.80
+            std        1   21                 0.63
+          exper        2   21                 0.63
+            std        2   21                 0.00
+          exper        3   21                 0.70
+            std        3   21                 0.50
+          exper        1   22                 0.82
+            std        1   22                 0.60
+          exper        2   22                 0.57
+            std        2   22                 0.40
+          exper        3   22                 1.00
+            std        3   22                 0.50
+;
+run;
+
+proc glm data= final plots=DIAGNOSTICS (unpack) ;
+class orient medium day;
+model frac = orient medium day;
+run;
+
+Data Final2;
+set final;
+AddedFrac = frac + 1.00;
+run;
+
+proc glm data= final2 plots=DIAGNOSTICS (unpack) ; 
+/*checking to see if the data yields the same responses when the constant is added*/
+class orient medium day;
+model addedfrac = orient medium day;
+run;
+/*Data response was the same as before the added constant so now we multiply by the 
+suggested power*/
+proc transreg data= final2; /* Adding a constant and log transformation*/
+model boxcox (addedfrac / alpha=0.05) = identity(day);
+run; /*2.4 power transformation suggested */ 
+
+Data newFrac; /* using dataset final; original dataset*/ 
+set final;
+transfrac =frac**2.4;
+run;
+
+proc glm data=newfrac plots=diagnostics(unpack);
+class orient medium day;
+model transfrac = orient medium day;
+means day / tukey;
+run;
+
+Proc glm data=newfrac;
+class orient medium day;
+model transfrac = orient|medium day;
+run;
+/*According to the ANOVA above there is a significant difference in the response
+due to the starting day as supported by the Tukey means test.*/
+
+
