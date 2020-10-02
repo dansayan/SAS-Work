@@ -1,4 +1,3 @@
-/*In keeping with the FSU honor code, I certify that this submission results solely from my own work.*/
 
 /*1*/
 libname orion "/courses/d0f434e5ba27fe300/sql";
@@ -7,7 +6,7 @@ select avg(Quantity) as MeanQuantity
 from orion.order_fact
 ;
 /*B*/
-title "Employees whose Average Quantity Items Sold Exceeds the Company’s Average Items Sold";
+title "Employees whose Average Quantity Items Sold Exceeds the Companyâ€™s Average Items Sold";
 select Employee_id, Avg(Quantity) as MeanQuantity
 from orion.order_fact
 group by Employee_id
