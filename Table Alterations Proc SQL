@@ -1,0 +1,242 @@
+libname orion "/courses/d0f434e5ba27fe300/sql";
+
+/*1*/
+
+proc sql;
+ create table work.Products as
+  select distinct * 
+  from orion.Product_DIM
+  order by Product_ID
+ ;
+ update work.Products
+ set Product_Name = "Sunfit Speedy Swimming Trunks"
+ where Product_ID = 210200200022
+ ;
+ insert into work.Products
+ set  Product_ID = 240600100202, Product_Line= "Sports", 
+      Product_Category ="Swim Sports", Product_Group="Snorkel Gear",
+      Product_Name = "Coral Dive Mask - Med", Supplier_Country = "AU", 
+      Supplier_Name = "Dingo Divers", Supplier_ID=21001
+      
+ set Product_ID = 240600100203, Product_Line= "Sports", 
+      Product_Category ="Swim Sports", Product_Group="Snorkel Gear",
+      Product_Name = "Coral Dive Mask - Large", Supplier_Country = "AU", 
+      Supplier_Name = "Dingo Divers", Supplier_ID=21001
+      
+ set Product_ID =240600100212 , Product_Line= "Sports", 
+      Product_Category ="Swim Sports", Product_Group="Snorkel Gear",
+      Product_Name = "Coral Dive Fins - Med", Supplier_Country = "AU", 
+      Supplier_Name = "Dingo Divers", Supplier_ID=21001
+ 
+ set Product_ID =240600100213 , Product_Line= "Sports", 
+      Product_Category ="Swim Sports", Product_Group="Snorkel Gear",
+      Product_Name = "Coral Dive Fins - Large", Supplier_Country = "AU", 
+      Supplier_Name = "Dingo Divers", Supplier_ID=21001
+      
+ set Product_ID =240600100222 , Product_Line= "Sports", 
+      Product_Category ="Swim Sports", Product_Group="Snorkel Gear",
+      Product_Name = "Coral Advanced Snorkel", Supplier_Country = "AU", 
+      Supplier_Name = "Dingo Divers", Supplier_ID=21001     
+      
+ set Product_ID =240600100223 , Product_Line= "Sports", 
+      Product_Category ="Swim Sports", Product_Group="Snorkel Gear",
+      Product_Name = "Coral Pro Snorkel", Supplier_Country = "AU", 
+      Supplier_Name = "Dingo Divers", Supplier_ID=21001      
+     ;
+ drop table work.Products
+ ;
+quit;
+
+/*2*/
+proc sql;
+   create table work.Products as
+      select distinct * 
+      from orion.Product_DIM
+      order by Product_ID
+   ;
+   create table work.NewProducts
+      (Product_ID num label='Product ID',
+       Product_Line char(20) label='Product Line',
+       Product_Category char(25) label='Product Category',
+       Product_Group char(25) label='Product Group',
+       Product_Name char(45) label='Product Name',
+       Supplier_Country char(2) label='Supplier Country',
+       Supplier_Name char(30) label='Supplier Name',
+       Supplier_ID num label='Supplier ID'
+      );
+   insert into work.NewProducts(Product_ID,Product_Line, 
+               Product_Category, Product_Group, Product_Name,
+               Supplier_Country, Supplier_Name, Supplier_ID)
+      values(240600100202,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Mask - Med","AU","Dingo Divers",21001)
+      values(240600100203,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Mask - Large","AU","Dingo Divers",21001)
+      values(240600100212,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Fins - Med","AU","Dingo Divers",21001)
+      values(240600100213,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Fins - Large","AU","Dingo Divers",21001)
+      values(240600100222,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Advanced Snorkel","AU","Dingo Divers",21001)
+      values(240600100223,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Pro Snorkel","AU","Dingo Divers",21001)
+      values(240600100341,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Skin - Small","AU","Dingo Divers",21001)
+      values(240600100342,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Skin - Med","AU","Dingo Divers",21001)
+      values(240600100343,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Skin - Large","AU","Dingo Divers",21001)
+      values(240600100351,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Goody Bag - Large","AU","Dingo Divers",21001)
+      values(240600100352,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Knife","AU","Dingo Divers",21001)
+      values(240600100361,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Duffel - Small","AU","Dingo Divers",21001)
+      values(240600100362,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Duffel - Med","AU","Dingo Divers",21001)
+      values(240600100363,"Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Duffel - Large","AU","Dingo Divers",21001)
+      ;
+ delete from work.Products
+ where Product_ID in (210200300006, 210200300007, 210200300052,
+                      210200400020, 210200400029, 210200400070)
+ ;
+ select * 
+ from work.NewProducts
+ union
+ select * from work.Products
+ ;
+ alter table work.Products
+ add Shipping_Delay num
+ ;
+ update work.Products
+ set Shipping_Delay = 7
+ where Supplier_ID = 755 and Product_Group = "Sleepingbags"
+;
+quit;
+
+proc sql;
+ Select Supplier_Name, Product_Group, Product_Name, Shipping_Delay
+ from work.Products
+ where Shipping_Delay is not missing
+ ;
+quit;
+
+proc sql;
+ alter table Products
+ drop Shipping_Delay
+;
+describe table work.Products;
+drop table Products;
+drop table NewProducts;
+quit;
+
+/*3*/
+
+proc sql;
+   create table work.Products as
+      select distinct * 
+         from orion.Product_DIM
+         order by Product_ID
+ ;
+   create table work.NewProducts(Product_ID CHAR(12) label='Product ID',
+                Product_Line char(20) label='Product Line',
+                Product_Category char(25) label='Product Category',
+                Product_Group char(25) label='Product Group',
+                Product_Name char(45) label='Product Name');
+   insert into work.NewProducts(Product_ID,Product_Line,
+               Product_Category,Product_Group,Product_Name)
+
+      values("240600100202","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Mask - Med")
+      values("240600100203","Sports","Swim Sports","Snorkel Gear",             
+             "Coral Dive Mask - Large")
+      values("240600100212","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Fins - Med")
+      values("240600100213","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Fins - Large")
+      values("240600100222","Sports","Swim Sports","Snorkel Gear",
+             "Coral Advanced Snorkel")
+      values("240600100223","Sports","Swim Sports","Snorkel Gear",
+             "Coral Pro Snorkel")
+      values("240600100341","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Skin - Small")
+      values("240600100342","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Skin - Med")
+      values("240600100343","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Skin - Large")
+      values("240600100351","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Goody Bag - Large")
+      values("240600100352","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Knife")
+      values("240600100361","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Duffel - Small")
+      values("240600100362","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Duffel - Med")
+      values("240600100363","Sports","Swim Sports","Snorkel Gear",
+             "Coral Dive Duffel - Large")
+ ;
+   create table work.Supplier
+      (Country char(2) label='Supplier Country',
+       Name char(30) label='Supplier Name',
+       ID num label='Supplier ID')
+ ;
+   insert into work.Supplier(ID, Name,Country)
+      values(21001,"Dingo Divers","AU")
+ ;
+quit;
+
+
+proc sql;
+ alter table NewProducts
+ add Country char(2) label='Supplier Country'
+ add Supplier_Name char(30) label='Supplier Name'
+ add Supplier_ID num label='Supplier ID'
+ ;
+ update NewProducts
+ set Country = "AU" , Supplier_Name = "Dingo Divers", Supplier_ID = 21001
+ ;
+quit;
+
+/*Changing Product id from Char to Num*/
+
+data Newer;
+length Prod_ID 8.;
+set Newproducts;
+Prod_ID = input(Product_ID,12.);
+drop Product_ID;
+run;
+
+data NewProduct2(rename=(Prod_ID = Product_ID));
+set newer;
+run;
+
+proc sql;
+create table Products2 as
+ select * from products
+ union 
+ Select * from NewProduct2
+ ;
+quit;
+
+proc sql;
+drop table Newproducts;
+ drop table Supplier;
+ drop table NewProduct2;
+ drop table Products;
+quit;
+
+/*D*/
+proc sql;
+create table Product3 as
+ select supplier_country, count(Product_Category) as Count, product_category
+ from Products2
+ where Product_Category like 'Swim%'
+ ;
+Title "Swim Product Sourcing";
+select distinct Supplier_Country, (count(Product_Category)/Count) as Percent format = percent10.
+from product3
+group by Supplier_Country 
+order by calculated Percent desc
+ ; 
+title;
+quit;
