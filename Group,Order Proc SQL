@@ -1,0 +1,140 @@
+libname orion "/courses/d0f434e5ba27fe300/sql";
+
+/*1. Using PROC SQL Options and Displaying the 
+         Contents of a Dictionary Table        */
+
+title 'Dictionary Tables';
+proc sql outobs=1;
+ select Memname, Memlabel
+ from dictionary.Dictionaries
+ ;
+title;
+reset outobs =;
+title 'Tables Containing Customer_ID';
+ select Memname, Type, Length
+ from dictionary.Columns 
+ where libname = 'ORION' and upcase(name) contains 'CUSTOMER_ID'
+ ;
+title;
+quit;
+
+/*2. Using PROC SQL Options and Displaying 
+        Dictionary Table Information        */
+
+proc sql;
+title "Dictionary Tables";
+ select distinct Memname, Memlabel, count(Name) 'Columns in each Table'
+ from dictionary.dictionaries
+ group by memname
+ ;
+ title;
+title 'Orion Library Tables';
+ select distinct Memname 'Table Name', nobs 'Number of Rows',
+ 	nvar 'Number of Columns', filesize , 
+ 	maxvar 'Widest Column', maxlabel 'Widest Column Label'
+ from dictionary.Tables 
+ where libname = 'ORION' and 
+       memtype ~= 'VIEW'
+ order by Memname
+ ;
+ title;
+ ;
+quit;     
+
+/*3. Using PROC SQL Options, SAS System Options, and Dictionary 
+     Tables to Document Data Tables in the Orion Star Library */
+       
+proc sql;
+ select distinct Memname 'Table Name', nobs 'Rows', nvar 'Columns',
+       filesize 'File Size (Bytes)', maxvar 'Widest Column'
+ from dictionary.tables
+ where libname = 'ORION' and memtype ne 'VIEW'
+ ;
+quit;
+       
+/*4. Creating and Using Macro Variables*/
+
+%Let dataset = Employee_Payroll;
+%Let VarName = Salary;
+title 'Max' &VarName 'of' &DATASET;
+proc sql;
+ select distinct max(Salary) as MaxSalary
+ from orion.employee_payroll
+ ;
+ select max(&VarName) as Max&VarName
+ from orion.&dataset
+%Put The dataset name is &dataset and 
+the variable name is &varname;
+ ;
+quit;
+
+%Let dataset = Price_List;
+%Let VarName = Unit_Sales_Price;
+
+
+/*5. Creating a Macro Variable from an SQL Query*/
+proc sql;
+title '2007 Purchases by Country';
+ select Country, sum(Total_Retail_Price) as Purchases
+ from orion.order_fact as a, orion.customer as b
+ where year(Order_Date)=2007 and
+       a.Customer_ID = b.Customer_ID
+ group by Country
+ order by Purchases desc
+ ;
+title;
+title1 "    2007 US Customer Purchases ";
+title2 "  Total US Purchases: $10,655.97 ";
+ select sum(Total_Retail_Price) as Purchases, Customer_Name 'Customer Name'
+ from orion.order_fact as a, orion.customer as b
+ where year(Order_date)=2007 and 
+       b.country = upcase('US') and 
+       a.customer_id = b.customer_id
+ group by Customer_Name
+ order by calculated Purchases desc
+ ;
+title;
+/*c*/
+ reset noprint;
+ select Country, sum(Total_Retail_Price) as Purchases
+ into :Country, :Purchases
+ from orion.order_fact as a, orion.customer as b
+ where year(Order_Date)=2007 and
+       a.Customer_ID = b.Customer_ID
+ group by Country
+ order by Purchases desc
+ ;
+%put Country With Highest Purchase: &Country Purchase Total: &Purchases;
+/*C-2*/
+reset print;
+title1 "2007 &country Customer Purchases ";
+title2 "Total US Purchases: &Purchases";
+ select sum(Total_Retail_Price) as Purchases, Customer_Name 'Customer Name'
+ from orion.order_fact as a, orion.customer as b
+ where year(Order_date)=2007 and 
+       b.country = upcase("&country") and 
+       a.customer_id = b.customer_id
+ group by Customer_Name
+ order by calculated Purchases desc
+ ;
+/*D*/
+ reset noprint;
+ select Country, sum(Total_Retail_Price) as Purchases
+ into :Country, :Purchases
+ from orion.order_fact as a, orion.customer as b
+ where year(Order_Date)=2007 and
+       a.Customer_ID = b.Customer_ID
+ group by Country
+ order by Purchases
+ ;
+ reset print;
+ select Customer_Name 'Customer Name', sum(Total_Retail_Price) as Purchases format = dollar10.2
+ from orion.order_fact as a, orion.customer as b
+ where year(Order_date)=2007 and 
+       b.country = upcase("&country") and 
+       a.customer_id = b.customer_id
+ group by Customer_Name
+ order by calculated Purchases desc
+ ;
+quit;
+
